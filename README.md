@@ -33,7 +33,7 @@ All state files (log, applied list, cookies, env) are saved **in the same direct
 ## Setup
 
 ```bash
-git clone https://github.com/your-username/mackenzie-estagio-bot
+git clone https://github.com/Klotheju/mackenzie-estagio-bot
 cd mackenzie-estagio-bot
 chmod +x setup_mackenzie_bot.sh mackenzie_estagio.sh
 ./setup_mackenzie_bot.sh
