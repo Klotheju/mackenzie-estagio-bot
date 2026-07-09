@@ -1,4 +1,4 @@
-# 🤖 Mackenzie Estágio Bot
+# 🤖 Mackenzie Estágio Bot (EN-US) 🇺🇸
 
 🇧🇷 [Leia em Português](#-mackenzie-estágio-bot-pt-br)
 
@@ -218,7 +218,7 @@ Update to the latest version of `mackenzie_estagio.sh` — HTML entity decoding 
 
 ---
 
-# 🤖 Mackenzie Estágio Bot (PT-BR)
+# 🤖 Mackenzie Estágio Bot (PT-BR) 🇧🇷
 
 🇺🇸 [Read in English](#-mackenzie-estágio-bot)
 
