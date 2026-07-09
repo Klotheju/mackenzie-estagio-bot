@@ -176,7 +176,7 @@ crontab -l   # should show no mackenzie line
 
 ```bash
 # 1. Clone fresh copy
-git clone https://github.com/your-username/mackenzie-estagio-bot
+git clone https://github.com/Klotheju/mackenzie-estagio-bot
 cd mackenzie-estagio-bot
 
 # 2. Run setup (picks up your language preference again)
@@ -253,7 +253,7 @@ Todos os arquivos de estado (log, lista de candidaturas, cookies, env) são salv
 ## Instalação
 
 ```bash
-git clone https://github.com/seu-usuario/mackenzie-estagio-bot
+git clone https://github.com/Klotheju/mackenzie-estagio-bot
 cd mackenzie-estagio-bot
 chmod +x setup_mackenzie_bot.sh mackenzie_estagio.sh
 ./setup_mackenzie_bot.sh
@@ -396,7 +396,7 @@ crontab -l   # não deve mostrar nenhuma linha do mackenzie
 
 ```bash
 # 1. Clone uma cópia nova
-git clone https://github.com/seu-usuario/mackenzie-estagio-bot
+git clone https://github.com/Klotheju/mackenzie-estagio-bot
 cd mackenzie-estagio-bot
 
 # 2. Execute o setup (escolha o idioma novamente)
