@@ -224,6 +224,8 @@ Update to the latest version of `mackenzie_estagio.sh` — HTML entity decoding 
 
 🇺🇸 [Read in English](#-mackenzie-estágio-bot)
 
+Automatize suas candidaturas para estágio na Mackenzie — configure uma vez, deixe rodar em segundo plano.
+
 ---
 
 Candidata-se automaticamente a estágios em Ciência da Computação em São Paulo - SP no [carreiras.mackenzie.br](https://carreiras.mackenzie.br/Oportunidades) e envia notificações de área de trabalho quando novas vagas são encontradas.
