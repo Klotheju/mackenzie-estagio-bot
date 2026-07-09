@@ -2,6 +2,8 @@
 
 🇧🇷 [Leia em Português](#-mackenzie-estágio-bot-pt-br)
 
+Automate your Mackenzie internship applications — set it up once, let it run in the background.
+
 ---
 
 Automatically applies to Computer Science internships (*Estágios em Ciência da Computação*) in São Paulo - SP on [carreiras.mackenzie.br](https://carreiras.mackenzie.br/Oportunidades), and sends a desktop notification when new listings are found.
