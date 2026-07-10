@@ -4,6 +4,9 @@
 
 Automate your Mackenzie internship applications — set it up once, let it run in the background.
 
+**[Doações/Donations]()**
+
+Bitcoin Doações/Donations: bc1qud5vgztqnkph5ym2lxax6kw4k7q2wuz67utmrj
 ---
 
 Automatically applies to Computer Science internships (*Estágios em Ciência da Computação*) in São Paulo - SP on [carreiras.mackenzie.br](https://carreiras.mackenzie.br/Oportunidades), and sends a desktop notification when new listings are found.
