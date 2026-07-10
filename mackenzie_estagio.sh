@@ -12,7 +12,6 @@
 set -uo pipefail
 
 # ─── PATHS ────────────────────────────────────────────────────────────────────
-# Everything lives next to this script — no files scattered in $HOME
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 COOKIE_FILE="${SCRIPT_DIR}/.mackenzie_cookies.txt"
@@ -24,9 +23,6 @@ ENV_FILE="${SCRIPT_DIR}/.mackenzie_bot_env"
 trap 'echo "[$(date "+%Y-%m-%d %H:%M:%S")] FATAL: aborted at line $LINENO (exit $?)" >> "${SESSION_LOG}"' ERR
 
 # ─── LANGUAGE ─────────────────────────────────────────────────────────────────
-# Set MACKENZIE_LANG to "pt" for Portuguese or "en" for English.
-# Saved automatically by setup_mackenzie_bot.sh into .mackenzie_bot_env.
-# Override at runtime: MACKENZIE_LANG=en ./mackenzie_estagio.sh
 LANG="${MACKENZIE_LANG:-pt}"
 
 # ─── TRANSLATIONS ─────────────────────────────────────────────────────────────
@@ -53,14 +49,14 @@ msg() {
                 cookies_not_found)       echo "WARNING: Could not find browser cookies.sqlite — will try without stored cookies." ;;
                 cookies_extracted)       echo "Cookies extracted from browser profile:" ;;
                 cookies_lines)           echo "lines" ;;
-                notify_warn_fail)        echo "WARNING: notify-send failed (no graphical session reachable?)" ;;
+                notify_warn_fail)        echo "WARNING: notify-send failed — check .mackenzie_bot_env (Wayland/DBUS vars may be stale, re-run setup)" ;;
                 notify_warn_missing)     echo "WARNING: notify-send not installed. Skipping desktop notification." ;;
                 new_jobs_log)            echo "New jobs found and processed." ;;
                 summary_label)           echo "Summary:" ;;
                 notif_title)             echo "🎓 Mackenzie Bot: new listing(s)!" ;;
-                notif_body_processed)    echo "new listing(s) processed." ;;
+                notif_body_processed)    echo "new listing(s) applied to." ;;
                 notif_body_flagged)      echo "need(s) manual review." ;;
-                notif_body_log)          echo "See:" ;;
+                notif_body_log)          echo "Log:" ;;
                 no_new_jobs)             echo "No new jobs found in this run." ;;
                 run_complete)            echo "Run complete." ;;
                 flagged_label)           echo "check manually" ;;
@@ -86,14 +82,14 @@ msg() {
                 cookies_not_found)       echo "AVISO: cookies.sqlite do navegador não encontrado — tentando sem cookies armazenados." ;;
                 cookies_extracted)       echo "Cookies extraídos do perfil do navegador:" ;;
                 cookies_lines)           echo "linhas" ;;
-                notify_warn_fail)        echo "AVISO: notify-send falhou (nenhuma sessão gráfica acessível?)" ;;
+                notify_warn_fail)        echo "AVISO: notify-send falhou — verifique .mackenzie_bot_env (vars Wayland/DBUS podem estar desatualizadas, execute o setup novamente)" ;;
                 notify_warn_missing)     echo "AVISO: notify-send não instalado. Pulando notificação." ;;
                 new_jobs_log)            echo "Novas vagas encontradas e processadas." ;;
                 summary_label)           echo "Resumo:" ;;
                 notif_title)             echo "🎓 Mackenzie Bot: nova(s) vaga(s)!" ;;
-                notif_body_processed)    echo "nova(s) vaga(s) processada(s)." ;;
+                notif_body_processed)    echo "nova(s) vaga(s) candidatada(s)." ;;
                 notif_body_flagged)      echo "precisa(m) de verificação manual." ;;
-                notif_body_log)          echo "Veja:" ;;
+                notif_body_log)          echo "Log:" ;;
                 no_new_jobs)             echo "Nenhuma vaga nova encontrada nesta execução." ;;
                 run_complete)            echo "Execução concluída." ;;
                 flagged_label)           echo "verificar manualmente" ;;
@@ -105,8 +101,6 @@ msg() {
 # ─── CONFIGURATION ────────────────────────────────────────────────────────────
 BASE_URL="https://carreiras.mackenzie.br"
 SEARCH_URL="${BASE_URL}/Oportunidades"
-# IDs captured from browser DevTools (Network → Request → Form data) 2026-06-30.
-# See README for how to find your own CidadeId / CursoId.
 TIPO_VAGA="estagio"
 CIDADE_ID="3905"
 CURSO_ID="1190"
@@ -114,15 +108,45 @@ CURSO_ID="1190"
 # ─── HELPERS ──────────────────────────────────────────────────────────────────
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$SESSION_LOG"; }
 
+# notify() — Wayland/Mako-aware notification sender.
+# Mako on Hyprland/CachyOS needs WAYLAND_DISPLAY + XDG_RUNTIME_DIR exported
+# correctly, which cron doesn't inherit. We source the env file first (already
+# done by the cron line), then try notify-send. If it fails we log clearly so
+# the user knows to re-run setup to refresh stale Wayland env vars.
 notify() {
     local title="$1" body="$2" urgency="${3:-normal}"
-    if command -v notify-send &>/dev/null; then
-        notify-send --urgency="$urgency" --app-name="Mackenzie Bot" \
-            --icon=dialog-information "$title" "$body" 2>/dev/null || \
-            log "$(msg notify_warn_fail)"
-    else
+
+    if ! command -v notify-send &>/dev/null; then
         log "$(msg notify_warn_missing)"
+        return
     fi
+
+    # Try sending — Mako needs no extra flags beyond what's in the env
+    if notify-send \
+        --urgency="$urgency" \
+        --app-name="Mackenzie Bot" \
+        --expire-time=10000 \
+        "$title" "$body" 2>/dev/null; then
+        return 0
+    fi
+
+    # First attempt failed — try forcing the Wayland socket path explicitly
+    local uid
+    uid=$(id -u)
+    local wayland_sock="${XDG_RUNTIME_DIR:-/run/user/${uid}}/wayland-1"
+
+    if WAYLAND_DISPLAY="$wayland_sock" \
+       XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/${uid}}" \
+       notify-send \
+           --urgency="$urgency" \
+           --app-name="Mackenzie Bot" \
+           --expire-time=10000 \
+           "$title" "$body" 2>/dev/null; then
+        return 0
+    fi
+
+    # Both failed — log clearly and suggest fix
+    log "$(msg notify_warn_fail)"
 }
 
 ensure_files() { touch "$APPLIED_LOG" "$SESSION_LOG" "$STATE_FILE"; }
@@ -130,9 +154,6 @@ is_applied()   { grep -qF "$1" "$APPLIED_LOG" 2>/dev/null; }
 mark_applied() { echo "$1" >> "$APPLIED_LOG"; }
 
 # ─── COOKIE EXTRACTION ────────────────────────────────────────────────────────
-# Searches all common paths for Firefox-based browsers across distros.
-# Supports: LibreWolf, Firefox, Floorp, Waterfox, IceCat, Pale Moon,
-#           Zen Browser — and their Flatpak/Snap variants.
 extract_cookies() {
     if ! command -v sqlite3 &>/dev/null; then
         log "$(msg cookies_no_sqlite)"
@@ -141,7 +162,7 @@ extract_cookies() {
     fi
 
     local search_paths=(
-        # LibreWolf — standard
+        # LibreWolf — standard + config-dir variant (CachyOS/Arch)
         "${HOME}/.librewolf"
         "${HOME}/.config/librewolf"
         # LibreWolf — Flatpak
@@ -175,7 +196,6 @@ extract_cookies() {
         local found
         found=$(find "$base" -maxdepth 4 -name "cookies.sqlite" 2>/dev/null | head -10)
         if [[ -n "$found" ]]; then
-            # Pick the most recently modified cookies.sqlite
             profile_db=$(echo "$found" | while read -r f; do
                 echo "$(stat -c '%Y' "$f" 2>/dev/null || echo 0) $f"
             done | sort -rn | head -1 | awk '{print $2}')
@@ -185,7 +205,7 @@ extract_cookies() {
 
     if [[ -z "$profile_db" ]]; then
         log "$(msg cookies_not_found)"
-        return 0   # non-fatal — session may still work from Tab Reloader
+        return 0
     fi
 
     local tmp_db
@@ -248,7 +268,6 @@ fetch_search_html() {
         "${SEARCH_URL}"
 }
 
-# Extract all job codes from search HTML
 parse_codes() {
     echo "$1" \
     | grep -oE 'Oportunidades/estagio/[0-9]+' \
@@ -256,7 +275,6 @@ parse_codes() {
     | sort -u
 }
 
-# Extract title for a specific job code from search HTML
 parse_title_for_code() {
     local html="$1"
     local code="$2"
@@ -275,7 +293,6 @@ parse_title_for_code() {
             | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
     fi
 
-    # Decode HTML entities
     title=$(echo "$title" | sed \
         's/&#225;/á/g;s/&#233;/é/g;s/&#237;/í/g;s/&#243;/ó/g;s/&#250;/ú/g;
          s/&#226;/â/g;s/&#234;/ê/g;s/&#244;/ô/g;
@@ -290,8 +307,6 @@ parse_title_for_code() {
 }
 
 # ─── APPLY TO A JOB ───────────────────────────────────────────────────────────
-# Confirmed from DevTools: /Oportunidades/Candidatar/{code} is a GET
-# returning HTTP 302 on success.
 apply_to_job() {
     local code="$1"
     local title="$2"

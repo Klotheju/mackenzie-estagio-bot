@@ -7,6 +7,7 @@ Automate your Mackenzie internship applications — set it up once, let it run i
 **Doações/Donations: [https://ko-fi.com/mrg](https://ko-fi.com/mrg)**
 
 Bitcoin Doações/Donations: bc1qud5vgztqnkph5ym2lxax6kw4k7q2wuz67utmrj
+
 ---
 
 Automatically applies to Computer Science internships (*Estágios em Ciência da Computação*) in São Paulo - SP on [carreiras.mackenzie.br](https://carreiras.mackenzie.br/Oportunidades), and sends a desktop notification when new listings are found.
@@ -47,7 +48,8 @@ chmod +x setup_mackenzie_bot.sh mackenzie_estagio.sh
 The setup script will:
 - Ask you to choose a language (🇧🇷 PT-BR or 🇺🇸 EN)
 - Check all dependencies with distro-specific install hints
-- Detect your graphical session (DBUS/DISPLAY) so notifications work from cron
+- Detect your graphical session (Wayland/X11) — captures `WAYLAND_DISPLAY`, `XDG_RUNTIME_DIR`, `DBUS_SESSION_BUS_ADDRESS` and more so Mako and other notification daemons work from cron
+- Send a **live test notification** immediately to confirm everything works
 - Install the cron job (`*/30 * * * *`)
 - Optionally run the bot immediately to test everything
 
@@ -206,8 +208,20 @@ The bot will log a warning and continue — if Tab Reloader kept your session al
 **Session keeps expiring**
 Make sure Tab Reloader is active on the Mackenzie tab, set to ≤ 30 minutes. If the browser's Enhanced Tracking Protection is blocking the site, add an exception for `carreiras.mackenzie.br`.
 
-**Desktop notifications not showing**
-Run `./setup_mackenzie_bot.sh` again after logging in/out — the DBUS address can change between sessions, especially on Wayland.
+**Desktop notifications not showing (Mako / Wayland / Hyprland)**
+Mako requires `WAYLAND_DISPLAY` and `XDG_RUNTIME_DIR` to be set correctly — values that cron doesn't inherit by default and that change every session. The setup script now captures and writes all of them automatically. If notifications stop working after a reboot or re-login:
+
+```bash
+cd /path/to/mackenzie-estagio-bot
+./setup_mackenzie_bot.sh
+```
+
+Setup now sends a **live test notification** immediately after writing the env file — if it appears on screen, cron notifications will work. If it doesn't appear, log out and log back in, then re-run setup.
+
+To manually test at any time:
+```bash
+. /path/to/mackenzie-estagio-bot/.mackenzie_bot_env && notify-send 'Test' 'Mackenzie Bot'
+```
 
 **Titles show HTML entities (e.g. `&#225;`)**
 Update to the latest version of `mackenzie_estagio.sh` — HTML entity decoding was added in a recent update.
@@ -221,13 +235,27 @@ Update to the latest version of `mackenzie_estagio.sh` — HTML entity decoding 
 
 ---
 
+## Support / Donate
+
+If this bot saved you time or helped you land an internship, consider supporting development:
+
+**Ko-fi: [https://ko-fi.com/mrg](https://ko-fi.com/mrg)**
+
+**Bitcoin: bc1qud5vgztqnkph5ym2lxax6kw4k7q2wuz67utmrj**
+
+---
+
 ---
 
 # 🤖 Mackenzie Estágio Bot (PT-BR) 🇧🇷
 
-🇺🇸 [Read in English](#-mackenzie-estágio-bot)
+🇺🇸 [Read in English](#-mackenzie-estágio-bot-en-us-)
 
 Automatize suas candidaturas para estágio na Mackenzie — configure uma vez, deixe rodar em segundo plano.
+
+**Doações/Donations: [https://ko-fi.com/mrg](https://ko-fi.com/mrg)**
+
+Bitcoin Doações/Donations: bc1qud5vgztqnkph5ym2lxax6kw4k7q2wuz67utmrj
 
 ---
 
@@ -269,7 +297,8 @@ chmod +x setup_mackenzie_bot.sh mackenzie_estagio.sh
 O script de setup vai:
 - Perguntar o idioma (🇧🇷 PT-BR ou 🇺🇸 EN)
 - Verificar todas as dependências com dicas de instalação por distro
-- Detectar sua sessão gráfica (DBUS/DISPLAY) para que as notificações funcionem no cron
+- Detectar sua sessão gráfica (Wayland/X11) — captura `WAYLAND_DISPLAY`, `XDG_RUNTIME_DIR`, `DBUS_SESSION_BUS_ADDRESS` e mais, para que o Mako e outros daemons de notificação funcionem no cron
+- Enviar uma **notificação de teste ao vivo** imediatamente para confirmar que tudo funciona
 - Instalar o cron job (`*/30 * * * *`)
 - Opcionalmente executar o bot imediatamente para testar tudo
 
@@ -428,8 +457,20 @@ O bot registra um aviso e continua — se o Tab Reloader manteve a sessão ativa
 **A sessão continua expirando**
 Certifique-se de que o Tab Reloader está ativo na aba da Mackenzie com intervalo ≤ 30 minutos. Se a Proteção Aprimorada do navegador estiver bloqueando o site, adicione uma exceção para `carreiras.mackenzie.br`.
 
-**Notificações não aparecem**
-Execute `./setup_mackenzie_bot.sh` novamente após fazer login/logout — o endereço DBUS pode mudar entre sessões, especialmente no Wayland.
+**Notificações não aparecem (Mako / Wayland / Hyprland)**
+O Mako exige que `WAYLAND_DISPLAY` e `XDG_RUNTIME_DIR` estejam configurados corretamente — valores que o cron não herda por padrão e que mudam a cada sessão. O script de setup agora captura e grava todos eles automaticamente. Se as notificações pararem de funcionar após reinicialização ou re-login:
+
+```bash
+cd /caminho/para/mackenzie-estagio-bot
+./setup_mackenzie_bot.sh
+```
+
+O setup agora envia uma **notificação de teste ao vivo** imediatamente após gravar o arquivo env — se ela aparecer na tela, as notificações do cron funcionarão. Se não aparecer, faça logout e login novamente, depois execute o setup novamente.
+
+Para testar manualmente a qualquer momento:
+```bash
+. /caminho/para/mackenzie-estagio-bot/.mackenzie_bot_env && notify-send 'Teste' 'Mackenzie Bot'
+```
 
 **Títulos mostram entidades HTML (ex: `&#225;`)**
 Atualize para a versão mais recente do `mackenzie_estagio.sh` — a decodificação de entidades HTML foi adicionada em uma atualização recente.
@@ -440,3 +481,13 @@ Atualize para a versão mais recente do `mackenzie_estagio.sh` — a decodifica�
 - Os títulos das vagas são extraídos da página de resultados — sem requisições HTTP extras por vaga
 - Os IDs de filtro do POST (`CidadeId=3905`, `CursoId=1190`) foram capturados do DevTools em 30/06/2026
 - O endpoint `Candidatar/{código}` usa GET + redirect 302 (confirmado pelo DevTools) — nenhum token CSRF necessário
+
+---
+
+## Apoie / Doe
+
+Se este bot economizou seu tempo ou te ajudou a conseguir um estágio, considere apoiar o desenvolvimento:
+
+**Ko-fi: [https://ko-fi.com/mrg](https://ko-fi.com/mrg)**
+
+**Bitcoin: bc1qud5vgztqnkph5ym2lxax6kw4k7q2wuz67utmrj**
