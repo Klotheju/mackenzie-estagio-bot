@@ -4,7 +4,7 @@
 
 Automate your Mackenzie internship applications — set it up once, let it run in the background.
 
-**[Doações/Donations]()**
+**Doações/Donations: [https://ko-fi.com/mrg](https://ko-fi.com/mrg)**
 
 Bitcoin Doações/Donations: bc1qud5vgztqnkph5ym2lxax6kw4k7q2wuz67utmrj
 ---
